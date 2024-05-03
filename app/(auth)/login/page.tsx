@@ -12,7 +12,7 @@ import { Logo } from '@/components/icons';
 import { Checkbox } from '@nextui-org/checkbox';
 import { Image } from '@nextui-org/image';
 import image from '@/public/desk-with-mac.png';
-import { ErrorMessage, Field, Formik } from 'formik';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { IoEyeOffSharp, IoEyeSharp } from 'react-icons/io5';
 import 'aos/dist/aos.css';
 import Aos from 'aos';
@@ -119,98 +119,98 @@ export default function MyShop() {
               <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={(values, actions) => {
-                  handleSubmit(values);
-                }}
+                onSubmit={handleSubmit}
               >
-                <form action="#" method="POST" className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
-                    >
-                      Email address
-                    </label>
-                    <div className="mt-2">
-                      <Field
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      />
-                    </div>
-                    <ErrorMessage
-                      name="email"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="password"
-                      className="text-gray-900dark:text-gray-300 block text-sm font-medium leading-6"
-                    >
-                      Password
-                    </label>
-                    <div className="relative mt-2">
-                      <Field
-                        id="password"
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      />
-                      {!showPassword ? (
-                        <IoEyeOffSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      ) : (
-                        <IoEyeSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      )}
-                    </div>
-                    <ErrorMessage
-                      name="password"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Checkbox defaultSelected color="warning">
-                        Remember me
-                      </Checkbox>
-                    </div>
-
-                    <div className="text-sm leading-6">
-                      <a
-                        href="#"
-                        className="font-semibold text-warning hover:text-warning-300"
+                {() => (
+                  <Form action="#" method="POST" className="space-y-6">
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
                       >
-                        Forgot password?
-                      </a>
+                        Email address
+                      </label>
+                      <div className="mt-2">
+                        <Field
+                          id="email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                      </div>
+                      <ErrorMessage
+                        name="email"
+                        component="section"
+                        className={'text-danger'}
+                      />
                     </div>
-                  </div>
 
-                  <div>
-                    <Button
-                      type="submit"
-                      color={'warning'}
-                      variant={'shadow'}
-                      className={'w-full text-foreground'}
-                    >
-                      Sign in
-                    </Button>
-                  </div>
-                </form>
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="text-gray-900dark:text-gray-300 block text-sm font-medium leading-6"
+                      >
+                        Password
+                      </label>
+                      <div className="relative mt-2">
+                        <Field
+                          id="password"
+                          name="password"
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                        {!showPassword ? (
+                          <IoEyeOffSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        ) : (
+                          <IoEyeSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        )}
+                      </div>
+                      <ErrorMessage
+                        name="password"
+                        component="section"
+                        className={'text-danger'}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Checkbox defaultSelected color="warning">
+                          Remember me
+                        </Checkbox>
+                      </div>
+
+                      <div className="text-sm leading-6">
+                        <a
+                          href="#"
+                          className="font-semibold text-warning hover:text-warning-300"
+                        >
+                          Forgot password?
+                        </a>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Button
+                        type="submit"
+                        color={'warning'}
+                        variant={'shadow'}
+                        className={'w-full text-foreground'}
+                      >
+                        Sign in
+                      </Button>
+                    </div>
+                  </Form>
+                )}
               </Formik>
             </div>
 
