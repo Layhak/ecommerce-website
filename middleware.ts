@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  console.log('========| Middleware Running |========');
-  console.log('=> Request URL: ', request.url);
-  console.log('=> Request Method: ', request.method);
+  // console.log('========| Middleware Running |========');
+  // console.log('=> Request URL: ', request.url);
+  // console.log('=> Request Method: ', request.method);
   const cookies = request.cookies;
   const session = cookies.get('authjs.session-token');
-  console.log('=> Session: ', session);
+  // console.log('=> Session: ', session);
 
   // Check if the user is trying to access /login or /register
   if (

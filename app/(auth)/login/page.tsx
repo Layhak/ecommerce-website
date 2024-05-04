@@ -17,6 +17,8 @@ import { IoEyeOffSharp, IoEyeSharp } from 'react-icons/io5';
 import 'aos/dist/aos.css';
 import Aos from 'aos';
 import { togglePasswordVisibility } from '@/redux/feature/password/passwordVisibilitySlice';
+import { selectToken, setAccessToken } from '@/redux/feature/auth/authSlice';
+import { router } from 'next/client';
 
 type FormValues = {
   email: string;
@@ -39,6 +41,8 @@ const BaseUrl = process.env.NEXT_PUBLIC_LOCAL_HOST_API || '';
 export default function MyShop() {
   const dispatch = useAppDispatch();
   const showPassword = useAppSelector((state) => state.passwordVisibility);
+  const token = useAppSelector(selectToken);
+  console.log('Token from Redux store', token);
   // useEffect(() => {
   //   dispatch(togglePasswordVisibility());
   // }, []);
@@ -46,16 +50,11 @@ export default function MyShop() {
     dispatch(togglePasswordVisibility());
   };
   const router = useRouter();
-  const { data: session } = useSession();
-  console.log('Session Log', session);
+  // console.log('Session Log', session);
 
   useEffect(() => {
     dispatch(fetchUserProfile());
   }, []);
-
-  // if (session) {
-  //   router.push('/');
-  // }
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -65,21 +64,24 @@ export default function MyShop() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      });
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log('Data in jwt test: ', data);
 
-      const data = await response.json();
-      console.log('Response When Login' + data);
-
-      if (response.ok) {
-        // Handle success
-        router.push('/');
-      } else {
-        // Handle error
-      }
+          dispatch(setAccessToken(data.accessToken));
+          router.push('/');
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (error) {
       console.error('Login error:', error);
     }
   };
+  // if (session) {
+  //   router.push('/');
+  // }
 
   useEffect(() => {
     Aos.init({ duration: 1000 });

@@ -21,11 +21,15 @@ import { Logo } from '@/components/icons';
 import { usePathname } from 'next/navigation';
 import { Button } from '@nextui-org/button';
 import { signOut, useSession } from 'next-auth/react';
+import { useAppSelector } from '@/redux/hook';
+import { selectToken } from '@/redux/feature/auth/authSlice';
 // import { selectUsers } from '@/redux/feature/userProfile/userSlice';
 
 export const NavigationBar = () => {
   const { data: session } = useSession();
-  console.log('Session:', session?.user?.image);
+  const token = useAppSelector(selectToken);
+  console.log('Token:', token);
+  console.log('Session:', session);
   // const users = useSelector(selectUsers);
   const pathname = usePathname();
   return (
@@ -66,7 +70,7 @@ export const NavigationBar = () => {
         <NavbarItem className="hidden gap-2 lg:flex">
           <ThemeSwitch />
         </NavbarItem>
-        {!session ? (
+        {!session || !token ? (
           <>
             <NavbarItem className="hidden lg:flex">
               <Button
@@ -114,7 +118,9 @@ export const NavigationBar = () => {
                   isDisabled={true}
                 >
                   <p className="font-semibold">Signed in as</p>
-                  <p className="font-semibold">zoey@example.com</p>
+                  <p className="font-semibold">
+                    {session?.user?.email ?? 'test@gmail.com'}
+                  </p>
                 </DropdownItem>
                 <DropdownItem
                   key="logout"

@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import Loading from '@/app/(user)/loading';
 import Error from '@/app/(user)/error';
 import SessionWrapper from '@/app/SessionProvider';
+import StoreProvider from '@/app/StoreProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,18 +27,21 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <SessionWrapper>
         <body>
-          {/*@ts-ignore*/}
-          <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
-            <div className="relative flex h-screen flex-col">
-              <NavigationBar />
-              <main className="container mx-auto max-w-7xl flex-grow px-6 pt-16">
-                <ErrorBoundary errorComponent={Error}>
-                  <Suspense fallback={<Loading />}>{children}</Suspense>
-                </ErrorBoundary>
-              </main>
-              <Footer />
-            </div>
-          </Providers>
+          <StoreProvider>
+            <Providers
+              themeProps={{ attribute: 'class', defaultTheme: 'dark' }}
+            >
+              <div className="relative flex h-screen flex-col">
+                <NavigationBar />
+                <main className="container mx-auto max-w-7xl flex-grow px-6 pt-16">
+                  <ErrorBoundary errorComponent={Error}>
+                    <Suspense fallback={<Loading />}>{children}</Suspense>
+                  </ErrorBoundary>
+                </main>
+                <Footer />
+              </div>
+            </Providers>
+          </StoreProvider>
         </body>
       </SessionWrapper>
     </html>

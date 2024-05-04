@@ -21,16 +21,16 @@ type FormValues = {
   email: string;
   firstname: string;
   lastname: string;
-  password: string;
-  confirmPassword: string;
+  password1: string;
+  password2: string;
 };
 
 const initialValues: FormValues = {
   email: '',
-  password: '',
+  password1: '',
   firstname: '',
   lastname: '',
-  confirmPassword: '',
+  password2: '',
 };
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -39,7 +39,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required('Password is required'),
   firstname: Yup.string().required('First Name is required'),
   lastname: Yup.string().required('Last Name is required'),
-  confirmPassword: Yup.string()
+  password2: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
     .required('Confirm Password is required'),
 });
@@ -68,31 +68,6 @@ export default function MyShop() {
   // if (session) {
   //   router.push('/');
   // }
-
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      const response = await fetch(`${BaseUrl}login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-
-      const data = await response.json();
-      console.log('Response When Login' + data);
-
-      if (response.ok) {
-        // Handle success
-        router.push('/');
-      } else {
-        // Handle error
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-1" data-aos="flip-up">
       <div className="flex flex-1 flex-col justify-center px-4 pb-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -128,9 +103,7 @@ export default function MyShop() {
               <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={(values, actions) => {
-                  handleSubmit(values);
-                }}
+                onSubmit={async (values) => await signIn('credentials', values)}
               >
                 <form action="#" method="POST" className="space-y-6">
                   <div>
@@ -213,7 +186,7 @@ export default function MyShop() {
                     <div className="relative mt-2">
                       <Field
                         id="password"
-                        name="password"
+                        name="password1"
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         required
@@ -247,7 +220,7 @@ export default function MyShop() {
                     <div className="relative mt-2">
                       <Field
                         id="confirmPassword"
-                        name="confirmPassword"
+                        name="password2"
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         required
@@ -271,6 +244,14 @@ export default function MyShop() {
                       className={'text-danger'}
                     />
                   </div>
+                  <Button
+                    type="submit"
+                    color={'warning'}
+                    variant={'shadow'}
+                    className={'w-full text-foreground'}
+                  >
+                    Sign in
+                  </Button>
                 </form>
               </Formik>
             </div>
