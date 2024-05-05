@@ -1,9 +1,8 @@
 'use client';
 import * as Yup from 'yup';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { fetchUserProfile } from '@/redux/feature/userProfile/userProfileSlice';
 import { useEffect } from 'react';
 import NextLink from 'next/link';
 import { Button } from '@nextui-org/button';
@@ -18,7 +17,6 @@ import 'aos/dist/aos.css';
 import Aos from 'aos';
 import { togglePasswordVisibility } from '@/redux/feature/password/passwordVisibilitySlice';
 import { selectToken, setAccessToken } from '@/redux/feature/auth/authSlice';
-import { router } from 'next/client';
 
 type FormValues = {
   email: string;
@@ -52,9 +50,9 @@ export default function MyShop() {
   const router = useRouter();
   // console.log('Session Log', session);
 
-  useEffect(() => {
-    dispatch(fetchUserProfile());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(fetchUserProfile());
+  // }, []);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -203,10 +201,12 @@ export default function MyShop() {
 
                     <div>
                       <Button
-                        type="submit"
                         color={'warning'}
-                        variant={'shadow'}
-                        className={'w-full text-foreground'}
+                        className={
+                          ' bg-gradient-to-tr from-orange-700 to-warning text-gray-50'
+                        }
+                        type="submit"
+                        variant="shadow"
                       >
                         Sign in
                       </Button>

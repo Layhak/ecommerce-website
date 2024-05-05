@@ -2,69 +2,98 @@
 import * as Yup from 'yup';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import NextLink from 'next/link';
 import { Button } from '@nextui-org/button';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { Logo } from '@/components/icons';
 import { Image } from '@nextui-org/image';
 import image from '@/public/desk-with-mac.png';
-import { ErrorMessage, Field, Formik } from 'formik';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { IoEyeOffSharp, IoEyeSharp } from 'react-icons/io5';
 import 'aos/dist/aos.css';
 import Aos from 'aos';
 import { togglePasswordVisibility } from '@/redux/feature/password/passwordVisibilitySlice';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { fetchUserProfile } from '@/redux/feature/userProfile/userProfileSlice';
+import { FormDataRegister } from '@/libs/difinition';
 
-type FormValues = {
+type ValueTypes = {
   email: string;
-  firstname: string;
-  lastname: string;
   password1: string;
   password2: string;
+  first_name: string;
+  last_name: string;
 };
 
-const initialValues: FormValues = {
+const initialValues: ValueTypes = {
   email: '',
   password1: '',
-  firstname: '',
-  lastname: '',
   password2: '',
+  first_name: '',
+  last_name: '',
 };
+
+const strongPasswordRegex = new RegExp(
+  '^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&*]).{8,}$'
+);
+
 const validationSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required'),
-  password: Yup.string().required('Password is required'),
-  firstname: Yup.string().required('First Name is required'),
-  lastname: Yup.string().required('Last Name is required'),
+  email: Yup.string().email('Invalid email').required('Required'),
+  password1: Yup.string()
+    .min(8, 'Password is too short, At least 8 characters')
+    .matches(
+      strongPasswordRegex,
+      'Password must contain at least one upper case English letter, one lower case English letter, one digit and one special character'
+    )
+    .required('Required'),
   password2: Yup.string()
-    .oneOf([Yup.ref('password')], 'Passwords must match')
-    .required('Confirm Password is required'),
+    .oneOf([Yup.ref('password1')], 'Passwords must match')
+    .required('Required'),
+  first_name: Yup.string().required('Required'),
+  last_name: Yup.string().required('Required'),
 });
 
 const BaseUrl = process.env.NEXT_PUBLIC_LOCAL_HOST_API || '';
 
 export default function MyShop() {
   const dispatch = useAppDispatch();
-  // useEffect(() => {
-  //   dispatch(togglePasswordVisibility());
-  // }, []);
-  useEffect(() => {
-    Aos.init({ duration: 1000 });
-  }, []);
-  useEffect(() => {
-    dispatch(fetchUserProfile());
-  }, []);
+
+  const [formData, setFormData] = useState<FormDataRegister>({
+    email: '',
+    password1: '',
+    password2: '',
+    first_name: '',
+    last_name: '',
+  });
   const showPassword = useAppSelector((state) => state.passwordVisibility);
+  const router = useRouter();
+
+  const handleRegister = async (values: ValueTypes) => {
+    try {
+      const res = await fetch(`${BaseUrl}register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values), // Send form values directly
+      });
+      if (res.ok) {
+        router.push(`/activate-confirm-email/${values.email}`);
+      } else {
+        console.error('Registration failed');
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+    }
+  };
   const handleShowPassword = () => {
     dispatch(togglePasswordVisibility());
   };
-  const router = useRouter();
-  const { data: session } = useSession();
-  console.log('Session Log', session);
 
+  useEffect(() => {
+    Aos.init({ duration: 1000 });
+  }, []);
   // if (session) {
   //   router.push('/');
   // }
@@ -103,156 +132,158 @@ export default function MyShop() {
               <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={async (values) => await signIn('credentials', values)}
+                onSubmit={handleRegister}
               >
-                <form action="#" method="POST" className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
-                    >
-                      Email address
-                    </label>
-                    <div className="mt-2">
-                      <Field
-                        id="email"
+                {() => (
+                  <Form action="#" method="POST" className="space-y-6">
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+                      >
+                        Email address
+                      </label>
+                      <div className="mt-2">
+                        <Field
+                          id="email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                      </div>
+                      <ErrorMessage
                         name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        component="section"
+                        className={'text-danger'}
                       />
                     </div>
-                    <ErrorMessage
-                      name="email"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="firstname"
-                      className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
-                    >
-                      First Name
-                    </label>
-                    <div className="mt-2">
-                      <Field
-                        id="firstname"
-                        name="firstname"
-                        type="text"
-                        autoComplete="firstname"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    <div>
+                      <label
+                        htmlFor="firstname"
+                        className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+                      >
+                        First Name
+                      </label>
+                      <div className="mt-2">
+                        <Field
+                          id="firstname"
+                          name="first_name"
+                          type="text"
+                          autoComplete="first_name"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                      </div>
+                      <ErrorMessage
+                        name="first_name"
+                        component="section"
+                        className={'text-danger'}
                       />
                     </div>
-                    <ErrorMessage
-                      name="firstname"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="lastname"
-                      className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
-                    >
-                      Last Name
-                    </label>
-                    <div className="mt-2">
-                      <Field
-                        id="lastname"
-                        name="lastname"
-                        type="text"
-                        autoComplete="lastname"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    <div>
+                      <label
+                        htmlFor="lastname"
+                        className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+                      >
+                        Last Name
+                      </label>
+                      <div className="mt-2">
+                        <Field
+                          id="lastname"
+                          name="last_name"
+                          type="text"
+                          autoComplete="lastname"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                      </div>
+                      <ErrorMessage
+                        name="last_name"
+                        component="section"
+                        className={'text-danger'}
                       />
                     </div>
-                    <ErrorMessage
-                      name="lastname"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
 
-                  <div>
-                    <label
-                      htmlFor="password"
-                      className="text-gray-900dark:text-gray-300 block text-sm font-medium leading-6"
-                    >
-                      Password
-                    </label>
-                    <div className="relative mt-2">
-                      <Field
-                        id="password"
+                    <div>
+                      <label
+                        htmlFor="password"
+                        className="text-gray-900dark:text-gray-300 block text-sm font-medium leading-6"
+                      >
+                        Password
+                      </label>
+                      <div className="relative mt-2">
+                        <Field
+                          id="password"
+                          name="password1"
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                        {!showPassword ? (
+                          <IoEyeOffSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        ) : (
+                          <IoEyeSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        )}
+                      </div>
+                      <ErrorMessage
                         name="password1"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        component="section"
+                        className={'text-danger'}
                       />
-                      {!showPassword ? (
-                        <IoEyeOffSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      ) : (
-                        <IoEyeSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      )}
                     </div>
-                    <ErrorMessage
-                      name="password"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="confirmPassword"
-                      className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
-                    >
-                      Confirm Password
-                    </label>
-                    <div className="relative mt-2">
-                      <Field
-                        id="confirmPassword"
+                    <div>
+                      <label
+                        htmlFor="confirmPassword"
+                        className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+                      >
+                        Confirm Password
+                      </label>
+                      <div className="relative mt-2">
+                        <Field
+                          id="confirmPassword"
+                          name="password2"
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
+                          required
+                          className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        />
+                        {!showPassword ? (
+                          <IoEyeOffSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        ) : (
+                          <IoEyeSharp
+                            onClick={() => handleShowPassword()}
+                            className="absolute right-3 top-3 cursor-pointer"
+                          />
+                        )}
+                      </div>
+                      <ErrorMessage
                         name="password2"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                        required
-                        className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        component="section"
+                        className={'text-danger'}
                       />
-                      {!showPassword ? (
-                        <IoEyeOffSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      ) : (
-                        <IoEyeSharp
-                          onClick={() => handleShowPassword()}
-                          className="absolute right-3 top-3 cursor-pointer"
-                        />
-                      )}
                     </div>
-                    <ErrorMessage
-                      name="confirmPassword"
-                      component="section"
-                      className={'text-danger'}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    color={'warning'}
-                    variant={'shadow'}
-                    className={'w-full text-foreground'}
-                  >
-                    Sign in
-                  </Button>
-                </form>
+                    <Button
+                      type="submit"
+                      color={'warning'}
+                      variant={'shadow'}
+                      className={'w-full text-foreground'}
+                    >
+                      Sign in
+                    </Button>
+                  </Form>
+                )}
               </Formik>
             </div>
 

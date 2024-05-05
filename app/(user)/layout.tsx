@@ -31,15 +31,13 @@ export default function RootLayout({
             <Providers
               themeProps={{ attribute: 'class', defaultTheme: 'dark' }}
             >
-              <div className="relative flex h-screen flex-col">
-                <NavigationBar />
-                <main className="container mx-auto max-w-7xl flex-grow px-6 pt-16">
-                  <ErrorBoundary errorComponent={Error}>
-                    <Suspense fallback={<Loading />}>{children}</Suspense>
-                  </ErrorBoundary>
-                </main>
-                <Footer />
-              </div>
+              <NavigationBar />
+              <main className="container mx-auto min-h-screen max-w-7xl px-6 pt-16">
+                <ErrorBoundary errorComponent={Error}>
+                  <Suspense fallback={<Loading />}>{children}</Suspense>
+                </ErrorBoundary>
+              </main>
+              <Footer />
             </Providers>
           </StoreProvider>
         </body>
