@@ -119,7 +119,13 @@ export default function MyShop() {
               <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={handleSubmit}
+                onSubmit={async (values) => {
+                  await signIn('credentials', {
+                    email: values.email,
+                    password: values.password,
+                    callbackUrl: '/',
+                  });
+                }}
               >
                 {() => (
                   <Form action="#" method="POST" className="space-y-6">

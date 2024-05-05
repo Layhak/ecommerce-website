@@ -6,8 +6,90 @@ import Aos from 'aos';
 import InfiniteCarouselComponent from '@/components/marquee/marquee';
 import { Image } from '@nextui-org/image';
 import 'aos/dist/aos.css';
+import { useGetProductsQuery } from '@/redux/service/product';
+import { CartProductType } from '@/libs/difinition';
+import CardComponents from '@/components/card/productCard';
+import {
+  cn,
+  Pagination,
+  PaginationItemRenderProps,
+  PaginationItemType,
+} from '@nextui-org/react';
+import { ChevronIcon } from './ChevronIcon';
 
 export default function Page() {
+  const [page, setPage] = React.useState(1);
+  const pageSize = 8;
+
+  const { data, error, isLoading, isFetching } = useGetProductsQuery({
+    page: page,
+    pageSize: pageSize,
+  });
+  const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+  const renderItem = ({
+    ref,
+    key,
+    value,
+    isActive,
+    onNext,
+    onPrevious,
+    setPage,
+    className,
+  }: PaginationItemRenderProps) => {
+    if (value === PaginationItemType.NEXT) {
+      return (
+        <Button
+          key={key}
+          className={cn(className, 'h-8 w-8 min-w-8 bg-default-200/50')}
+          onClick={onNext}
+          isIconOnly
+        >
+          <ChevronIcon className="rotate-180" />
+        </Button>
+      );
+    }
+
+    if (value === PaginationItemType.PREV) {
+      return (
+        <Button
+          variant={'shadow'}
+          key={key}
+          className={cn(className, 'h-8 w-8 min-w-8 bg-default-200/50')}
+          onClick={onPrevious}
+          isIconOnly
+        >
+          <ChevronIcon />
+        </Button>
+      );
+    }
+
+    if (value === PaginationItemType.DOTS) {
+      return (
+        <button key={key} className={className}>
+          ...
+        </button>
+      );
+    }
+
+    // cursor is the default item
+    return (
+      <button
+        ref={ref}
+        key={key}
+        className={cn(
+          className,
+          isActive &&
+            'bg-gradient-to-tr  from-orange-700 to-warning font-bold text-white'
+        )}
+        onClick={() => setPage(value)}
+      >
+        {value}
+      </button>
+    );
+  };
   useEffect(() => {
     Aos.init({ duration: 1000 });
   }, []);
@@ -92,7 +174,7 @@ export default function Page() {
         </div>
       </div>
       <div
-        className={'my-20 pb-10 text-center text-2xl font-bold text-foreground'}
+        className={'my-20 pb-10 text-center text-3xl font-bold text-foreground'}
         data-aos="fade-up"
       >
         <h1>Our Partner</h1>
@@ -102,14 +184,14 @@ export default function Page() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="col-span-1 grid grid-cols-2 gap-4 md:col-span-2">
-              <div className={'row-span-2 rounded-xl shadow-lg'}>
+              <div className={'row-span-2 rounded-xl '}>
                 <Image
                   isBlurred
                   isZoomed
                   src="https://nextui.org/images/fruit-2.jpeg"
-                  height={640}
+                  sizes={'2000'}
                   alt="Casual Fashion"
-                  className="min-h-[100%] min-w-full rounded-xl object-cover shadow-lg"
+                  className="min-h-[100%]  rounded-xl"
                 />
               </div>
               <div className="grid grid-cols-1 gap-4">
@@ -120,7 +202,7 @@ export default function Page() {
                     src="https://nextui.org/images/hero-card-complete.jpeg"
                     height={100}
                     alt="Casual Fashion"
-                    className="round-xl object-cover  shadow-lg"
+                    className="round-xl object-cover "
                   />
                 </div>
                 <Image
@@ -129,7 +211,7 @@ export default function Page() {
                   src="https://nextui.org/images/card-example-2.jpeg"
                   height={100}
                   alt="Elegant Dress"
-                  className="rounded-xl  object-cover shadow-lg"
+                  className="rounded-xl object-cover shadow-lg"
                 />
               </div>
             </div>
@@ -138,14 +220,12 @@ export default function Page() {
               className="col-span-1 flex flex-col justify-center p-4"
               data-aos="fade-up"
             >
-              <h2 className="mb-4 text-2xl font-semibold">
-                Fashion Essentials
-              </h2>
+              <h2 className="mb-4 text-4xl font-bold">Fashion Essentials</h2>
               <p className="mb-4">
                 Discover the latest trends in Sparkle. From casual wear to
                 formal attire, find the perfect outfit for any occasion.
               </p>
-              <ul className="mb-4 text-gray-700">
+              <ul className="mb-4 text-foreground">
                 <li>
                   Explore a wide range of clothing options, including tops,
                   bottoms, dresses, and accessories.
@@ -167,8 +247,41 @@ export default function Page() {
           </div>
         </div>
       </section>
-      <section>
-        <h1>Our Product</h1>
+      <section data-aos="fade-up">
+        <h1 className={'my-10 text-center text-4xl font-bold'}>Our Product</h1>
+        <div
+          className={
+            'grid min-h-[686px] grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4'
+          }
+        >
+          {data?.results?.map((product: CartProductType) => (
+            <CardComponents
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              image={product.image}
+              category={product.category}
+              price={product.price}
+              seller={product.seller}
+              onClick={() => console.log('clicked')}
+            />
+          ))}
+        </div>
+        <div className={'my-5 flex justify-end'}>
+          <Pagination
+            disableCursorAnimation
+            total={totalPages}
+            initialPage={1}
+            page={page}
+            onChange={handlePageChange}
+            loop
+            showControls
+            className="gap-2"
+            radius="full"
+            renderItem={renderItem}
+            variant="light"
+          />
+        </div>
       </section>
     </>
   );
