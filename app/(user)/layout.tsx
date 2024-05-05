@@ -32,7 +32,7 @@ export default function RootLayout({
               themeProps={{ attribute: 'class', defaultTheme: 'dark' }}
             >
               <NavigationBar />
-              <main className="container mx-auto min-h-screen max-w-7xl px-6 pt-16">
+              <main className="container mx-auto min-h-[680px] max-w-7xl px-6 pt-16">
                 <ErrorBoundary errorComponent={Error}>
                   <Suspense fallback={<Loading />}>{children}</Suspense>
                 </ErrorBoundary>

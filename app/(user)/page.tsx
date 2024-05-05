@@ -15,7 +15,7 @@ import {
   PaginationItemRenderProps,
   PaginationItemType,
 } from '@nextui-org/react';
-import { ChevronIcon } from './ChevronIcon';
+import { ChevronIcon } from '@/components/icons';
 
 export default function Page() {
   const [page, setPage] = React.useState(1);
