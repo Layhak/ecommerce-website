@@ -60,7 +60,7 @@ export default function page() {
 
         {products.length !== 0 && (
           <div className="grid grid-cols-1 overflow-y-auto lg:grid-cols-5">
-            <div className="col-span-3 h-[550px] overflow-y-auto p-4 ">
+            <div className="col-span-3 p-4 ">
               <div className="flex justify-between">
                 <h1 className="mb-8 text-start text-xl font-bold uppercase">
                   Shopping Cart
@@ -71,74 +71,75 @@ export default function page() {
               </div>
 
               <hr />
-
-              {uniqueProducts.map((product) => (
-                <div
-                  className="my-4 flex w-full flex-col items-center justify-between  space-x-4 space-y-4  rounded-xl bg-gray-50 p-4 dark:bg-gray-900 md:flex-row"
-                  key={product.id}
-                >
-                  <div>
-                    <Image
-                      className="h-[100px] w-[80px] object-cover "
-                      src={product.image}
-                      alt={product.name}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="line-clamp-1 max-w-24 text-center text-lg">
-                      {product.name}
-                    </p>
-                    <p className="text-orange-10 text-center text-lg font-bold">
-                      ${product.price}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-evenly gap-4 md:flex-grow md:flex-row ">
-                    {/* increase button */}
-                    <div className="flex ">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-l-lg border">
-                        <LuPlus
-                          onClick={() =>
-                            dispatch(incrementQuantity(product.id))
-                          }
-                        />
-                      </div>
-
-                      <div className="flex h-8  w-8 items-center justify-center border">
-                        <span>{product.quantity}</span>
-                      </div>
-
-                      <div className=" flex h-8  w-8 items-center justify-center rounded-r-lg border">
-                        <LuMinus
-                          onClick={() =>
-                            dispatch(decrementQuantity(product.id))
-                          }
-                        />
-                      </div>
+              <div className={'h-[450px] overflow-y-auto'}>
+                {uniqueProducts.map((product) => (
+                  <div
+                    className="my-4 flex w-full  flex-col items-center justify-between  space-x-4 space-y-4  rounded-xl bg-gray-50 p-4 dark:bg-gray-900 md:flex-row"
+                    key={product.id}
+                  >
+                    <div>
+                      <Image
+                        className="h-[100px] w-[80px] object-cover "
+                        src={product.image}
+                        alt={product.name}
+                      />
                     </div>
 
                     <div>
-                      <p className="text-orange-10 text-lg font-bold">
-                        ${product.price * (product.quantity || 1)}
+                      <p className="line-clamp-1 max-w-24 text-center text-lg">
+                        {product.name}
+                      </p>
+                      <p className="text-orange-10 text-center text-lg font-bold">
+                        ${product.price}
                       </p>
                     </div>
 
-                    {/* remoove button */}
-                    <div>
-                      <Button
-                        isIconOnly
-                        onClick={() =>
-                          dispatch(removeFromCart({ id: product.id }))
-                        }
-                        className="rounded-xl bg-red-500 p-2 text-white"
-                      >
-                        <LuTrash />
-                      </Button>
+                    <div className="flex flex-col items-center justify-evenly gap-4 md:flex-grow md:flex-row ">
+                      {/* increase button */}
+                      <div className="flex ">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-l-lg border">
+                          <LuPlus
+                            onClick={() =>
+                              dispatch(incrementQuantity(product.id))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex h-8  w-8 items-center justify-center border">
+                          <span>{product.quantity}</span>
+                        </div>
+
+                        <div className=" flex h-8  w-8 items-center justify-center rounded-r-lg border">
+                          <LuMinus
+                            onClick={() =>
+                              dispatch(decrementQuantity(product.id))
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-orange-10 text-lg font-bold">
+                          ${product.price * (product.quantity || 1)}
+                        </p>
+                      </div>
+
+                      {/* remoove button */}
+                      <div>
+                        <Button
+                          isIconOnly
+                          onClick={() =>
+                            dispatch(removeFromCart({ id: product.id }))
+                          }
+                          className="rounded-xl bg-red-500 p-2 text-white"
+                        >
+                          <LuTrash />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div

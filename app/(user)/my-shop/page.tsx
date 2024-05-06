@@ -43,6 +43,8 @@ import CreateModalComponent from '@/components/modal/CreateModal';
 import Aos from 'aos';
 import 'aos/dist/aos.css';
 import UpdateModalComponent from '@/components/modal/UpdateModal';
+import { Link } from '@nextui-org/link';
+import NextLink from 'next/link';
 
 const INITIAL_VISIBLE_COLUMNS = [
   'id',
@@ -158,14 +160,11 @@ export default function App() {
         return (
           <div className="relative flex items-center gap-2">
             <Tooltip color={'primary'} content="Details">
-              <Button
-                isIconOnly
-                href={`/product/${product.id}`}
-                variant={'light'}
-                color={'primary'}
-              >
-                <EyeIcon />
-              </Button>
+              <NextLink href={`/product/${product.id}`}>
+                <Button isIconOnly variant={'light'} color={'primary'}>
+                  <EyeIcon />
+                </Button>
+              </NextLink>
             </Tooltip>
             <Tooltip color={'warning'} content="Edit user">
               <span className="cursor-pointer text-lg text-warning active:opacity-50">

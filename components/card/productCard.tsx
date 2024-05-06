@@ -24,7 +24,7 @@ export default function CardComponents({
   const dispatch = useAppDispatch();
 
   // product on click to product detail
-  const handleCardClick = () => console.log('Card clicked');
+  const handleCardClick = () => router.push(`/product/${id}`);
 
   // cart on click increase add to card product
   const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,7 +34,7 @@ export default function CardComponents({
   };
 
   return (
-    <Card className={styles.card}>
+    <Card className={styles.card} isPressable onPress={handleCardClick}>
       <CardHeader className={styles.cardHeader}>
         <div className={'basis-[70%]'}>
           <h4 className="line-clamp-1 text-large font-bold">
