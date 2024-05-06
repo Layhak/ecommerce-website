@@ -4,7 +4,7 @@ import { serialize } from 'cookie';
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { email, password } = body;
-  const response = await fetch(`${process.env.DJANGO_API_URL}user/login/`, {
+  const response = await fetch(`${process.env.BASE_URL}user/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),

@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
-import Credentials from '@auth/core/providers/credentials';
+import CredentialsProvider from '@auth/core/providers/credentials';
 
 export const {
   handlers: { GET, POST },
@@ -10,42 +10,49 @@ export const {
   signOut,
 } = NextAuth({
   providers: [
-    Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
+    CredentialsProvider({
+      name: 'Credentials',
       credentials: {
-        email: {},
-        password: {},
+        email: {
+          label: 'Email',
+          type: 'email',
+        },
+        password: { label: 'Password', type: 'password' },
       },
-      authorize: async (credentials) => {
-        // let user = {
-        //   email: credentials.email,
-        //   name: 'John Doe',
-        //   image: 'https://via.placeholder.com/150',
-        // };
-        console.log('Credentials:', credentials);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_LOCAL_HOST_API}login/`,
+      async authorize(credentials, req) {
+        const resp = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}user/login/`,
           {
             method: 'POST',
             headers: {
+              Accept: 'application/json',
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(credentials),
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
           }
         );
-        const data = await response.json();
-        console.log('data:', data);
-        // console.log('Data:', data);
-        const user = data?.user || null;
-        const accessToken = data?.access_token || null; // Get the access token from the response
+        const res = await resp.json();
 
-        return {
-          ...user,
-          name: user?.first_name + ' ' + user?.last_name,
-          image: 'https://via.placeholder.com/150',
-          accessToken: accessToken, // Include the access token in the user object
-        };
+        console.log('Data from login:', res);
+
+        // email: res.user.email,
+        // image: res.user?.image,
+        // res.accessGitToken = undefined;
+        if (resp.ok && res) {
+          return {
+            id: res.access_token,
+            name: res.refresh_token,
+            email: res.user.email,
+            image: res.user?.image,
+          };
+        }
+        if (!res.ok) {
+          throw new Error(JSON.stringify(res));
+        }
+        return null;
       },
     }),
     GithubProvider({
@@ -57,4 +64,58 @@ export const {
       clientSecret: process.env.NEXT_PUBLIC_CLIENT_SECRET as string,
     }),
   ],
+
+  // callbacks: {
+  //   // @ts-ignore
+  //   async signIn({
+  //     user,
+  //     account,
+  //     profile,
+  //   }: {
+  //     user: any;
+  //     account: any;
+  //     profile: Profile;
+  //   }) {
+  //     let email: string;
+  //     let name: string;
+  //
+  //     if (profile) {
+  //       email = profile.email;
+  //       name = profile.name;
+  //     } else if (user) {
+  //       email = user.email;
+  //       name = user.name;
+  //     } else {
+  //       console.error('No profile or user information available');
+  //       return;
+  //     }
+  //
+  //     console.log('User log from Auth :', user);
+  //     // Try to register the user
+  //     const password = email + name + process.env.NEXT_PUBLIC_AUTO_PASSWORD;
+  //     const registerResult = await registerUser(email, password);
+  //     if (registerResult === false) {
+  //       // User already exists, log in the user
+  //       const user = await loginUser(email, password);
+  //       return user;
+  //     } else {
+  //       const password = email + name + process.env.NEXT_PUBLIC_AUTO_PASSWORD;
+  //       await registerUser(email, password);
+  //       // New user registered, log in the user
+  //       // const user = await loginUser(email, password);
+  //       // return user;
+  //     }
+  //   },
+  //   // async session({ session, token, user }) {
+  //   // 	console.log('Session:', session);
+  //   // 	console.log('Token:', token.email);
+  //   // 	console.log('User:', user);
+  //   //
+  //   // 	// Send properties to the client, like an access_token and user id from a provider.
+  //   // 	// session.accessToken = token.accessToken
+  //   // 	// session.user.id = token.id
+  //   //
+  //   // 	return session
+  //   // }
+  // },
 });

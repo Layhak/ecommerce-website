@@ -1,0 +1,7 @@
+.card{
+    @apply min-w-[300px] py-4 h-[333px]
+}
+
+.cardHeader{
+    @apply flex-row items-center px-4 pb-0 pt-2 justify-between
+}
