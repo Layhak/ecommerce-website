@@ -17,12 +17,15 @@ import NextLink from 'next/link';
 import Link from 'next/link';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { Logo } from '@/components/icons';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@nextui-org/button';
 import { signOut, useSession } from 'next-auth/react';
 import { useAppSelector } from '@/redux/hook';
 import { selectToken } from '@/redux/feature/auth/authSlice';
 import { useEffect, useState } from 'react';
+import { CartIcon } from '@nextui-org/shared-icons';
+import { selectProducts } from '@/redux/feature/cartSlice';
+import { CartProductType } from '@/libs/difinition';
 
 // Utility function to get a specific cookie
 // Utility function to get a specific cookie
@@ -31,7 +34,25 @@ export const NavigationBar = () => {
   const { data: session } = useSession();
   const token = useAppSelector(selectToken);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const router = useRouter();
+  const handleCart = () => router.push('/cart');
 
+  //For Carts
+  const products = useAppSelector(selectProducts);
+
+  //display number of product that only unique select
+  const [uniqueProducts, setUniqueProducts] = useState<CartProductType[]>([]);
+
+  useEffect(() => {
+    // Filter unique products based on their IDs
+    const unique = products.filter(
+      (product, index, self) =>
+        index === self.findIndex((t) => t.id === product.id)
+    );
+
+    // Update the state with the unique products
+    setUniqueProducts(unique);
+  }, [products]);
   // const users = useSelector(selectUsers);
   const pathname = usePathname();
   useEffect(() => {
@@ -74,6 +95,14 @@ export const NavigationBar = () => {
         className="hidden basis-1/5 sm:flex sm:basis-full"
         justify="end"
       >
+        <NavbarItem className="hidden gap-2 lg:flex">
+          <div className={'relative'}>
+            <CartIcon fill="#f0a124" onClick={handleCart} />
+            <div className="bg-yellow-10 absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full text-xs">
+              {uniqueProducts.length}
+            </div>
+          </div>
+        </NavbarItem>
         <NavbarItem className="hidden gap-2 lg:flex">
           <ThemeSwitch />
         </NavbarItem>
@@ -162,6 +191,7 @@ export const NavigationBar = () => {
           ))}
         </div>
       </NavbarMenu>
+
       <NavbarContent className="basis-1 pl-4 lg:hidden" justify="end">
         <ThemeSwitch />
         <Avatar

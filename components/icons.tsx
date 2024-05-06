@@ -1,6 +1,19 @@
 import * as React from 'react';
 import { IconSvgProps } from '@/types';
 
+export const Cart = (props: IconSvgProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="32"
+    height="32"
+    viewBox="0 0 24 24"
+  >
+    <path
+      fill="#f0a124"
+      d="M4.025 21L.675 9H6.75l5.225-7.775L17.2 9h6.125l-3.35 12zM12 17q.825 0 1.413-.587T14 15t-.587-1.412T12 13t-1.412.588T10 15t.588 1.413T12 17M9.175 9H14.8l-2.825-4.2z"
+    />
+  </svg>
+);
 export const Logo: React.FC<IconSvgProps> = ({
   size = 36,
   width,
@@ -9,8 +22,9 @@ export const Logo: React.FC<IconSvgProps> = ({
 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="28.06"
-    height="32"
+    height={size || height}
+    width={size || width}
+    {...props}
     viewBox="0 0 256 292"
   >
     <path

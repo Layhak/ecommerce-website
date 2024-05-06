@@ -11,6 +11,8 @@ import { CartProductType } from '@/libs/difinition';
 import CardComponents from '@/components/card/productCard';
 import { Pagination } from '@nextui-org/react';
 import { renderItem } from '@/components/rendering/pagination';
+import { useAppDispatch } from '@/redux/hook';
+import { addToCart } from '@/redux/feature/cartSlice';
 
 export default function Page() {
   const [page, setPage] = React.useState(1);
@@ -24,6 +26,7 @@ export default function Page() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     Aos.init({ duration: 1000 });
@@ -198,7 +201,6 @@ export default function Page() {
               category={product.category}
               price={product.price}
               seller={product.seller}
-              onClick={() => console.log('clicked')}
             />
           ))}
         </div>

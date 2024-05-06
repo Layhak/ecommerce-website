@@ -5,15 +5,34 @@ import styles from './style.module.css';
 import { Button } from '@nextui-org/button';
 import { Link } from '@nextui-org/link';
 import { CartProductType } from '@/libs/difinition';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/redux/hook';
+import { addToCart } from '@/redux/feature/cartSlice';
 
 export default function CardComponents({
+  id,
   category,
   image,
   name,
   price,
   seller,
+  quantity,
   onClick,
 }: CartProductType) {
+  const router = useRouter();
+
+  const dispatch = useAppDispatch();
+
+  // product on click to product detail
+  const handleCardClick = () => console.log('Card clicked');
+
+  // cart on click increase add to card product
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // event.stopPropagation(); // Prevents the event from bubbling up to the card's onClick
+    console.log('Button clicked');
+    dispatch(addToCart({ id, name, image, price, quantity }));
+  };
+
   return (
     <Card className={styles.card}>
       <CardHeader className={styles.cardHeader}>
@@ -46,7 +65,7 @@ export default function CardComponents({
           <p className="text-large font-bold text-gray-200">${price ?? '11'}</p>
         </div>
         <Button
-          onClick={onClick}
+          onClick={handleButtonClick}
           className="bg-gradient-to-tr  from-orange-700 to-warning text-tiny text-gray-50"
           radius="full"
           variant="shadow"

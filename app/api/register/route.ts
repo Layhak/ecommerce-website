@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   console.log(body);
   const { email, password1, password2, first_name, last_name } = body;
 
-  const response = await fetch(`${process.env.DJANGO_API_URL}user/register/`, {
+  const response = await fetch(`${process.env.BASE_URL}user/register/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

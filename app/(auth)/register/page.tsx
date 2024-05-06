@@ -54,7 +54,7 @@ const validationSchema = Yup.object().shape({
   last_name: Yup.string().required('Required'),
 });
 
-const BaseUrl = process.env.NEXT_PUBLIC_LOCAL_HOST_API || '';
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL_LOCALHOST || '';
 
 export default function MyShop() {
   const dispatch = useAppDispatch();

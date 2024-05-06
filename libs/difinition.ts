@@ -5,6 +5,18 @@ export type FormDataRegister = {
   first_name: string;
   last_name: string;
 };
+export type CartProductType = {
+  name: string;
+  image: string;
+  price: number;
+  id: number;
+  seller?: string;
+  quantity?: number | 0;
+  category?: string;
+  desc?: string;
+  onClick?: () => void;
+};
+
 export type FormDataCreate = {
   category: {
     name: string;
@@ -45,15 +57,7 @@ export type ProductType = {
   desc: string;
   image: string;
 };
-export type CartProductType = {
-  name: string;
-  image: string;
-  price: number;
-  seller: string;
-  category: string;
-  id: number;
-  onClick?: () => void;
-};
+
 export type ModalType = {
   isOpen: boolean;
   onClose: () => void;

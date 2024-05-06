@@ -34,7 +34,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required('Password is required'),
 });
 
-const BaseUrl = process.env.NEXT_PUBLIC_LOCAL_HOST_API || '';
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL_LOCALHOST || '';
 
 export default function MyShop() {
   const dispatch = useAppDispatch();

@@ -4,7 +4,7 @@ import { getSession } from 'next-auth/react';
 
 // Setting up prepareHeaders to include the token in the headers
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_DJANGO_API_URL,
+  baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
   prepareHeaders: async (headers, { getState }) => {
     const session = await getSession();
     // if we have a token, let's set the authorization header
@@ -23,7 +23,7 @@ const baseQueryWithReAuth = async (args: any, api: any, extraOptions: any) => {
     console.log('sessionapi', session);
     if (session) {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DJANGO_API_URL}token/refresh/`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}token/refresh/`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -35,7 +35,7 @@ const baseQueryWithReAuth = async (args: any, api: any, extraOptions: any) => {
       if (resultResponse?.access) {
         console.log('refresh token success');
         const refreshedResult = await fetchBaseQuery({
-          baseUrl: process.env.NEXT_PUBLIC_DJANGO_API_URL,
+          baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
           prepareHeaders: async (headers) => {
             const session = await getSession();
             console.log('after refreshed', session);
