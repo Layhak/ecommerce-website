@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Dropdown,
@@ -40,6 +40,9 @@ import { Image } from '@nextui-org/image';
 import { renderItem } from '@/components/rendering/pagination';
 import DeleteModalComponent from '@/components/modal/DeleteModal';
 import CreateModalComponent from '@/components/modal/CreateModal';
+import Aos from 'aos';
+import 'aos/dist/aos.css';
+import UpdateModalComponent from '@/components/modal/UpdateModal';
 
 const INITIAL_VISIBLE_COLUMNS = [
   'id',
@@ -60,6 +63,7 @@ export default function App() {
     setId(id);
     setIsOpen(modal);
   };
+
   // Use the getMyProducts query
   const {
     data: products = [],
@@ -70,6 +74,7 @@ export default function App() {
   const updateProduct = useUpdateProductMutation();
 
   const [filterValue, setFilterValue] = useState('');
+  const [filterType, setFilterType] = useState('name');
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
@@ -93,16 +98,18 @@ export default function App() {
   }, [visibleColumns]);
 
   const filteredItems = useMemo(() => {
-    let filteredUsers = [...products];
+    let filterProducts = [...products];
 
     if (hasSearchFilter) {
-      filteredUsers = filteredUsers.filter((user) =>
-        user.name.toLowerCase().includes(filterValue.toLowerCase())
+      filterProducts = filterProducts.filter((product) =>
+        filterType === 'name'
+          ? product.name.toLowerCase().includes(filterValue.toLowerCase())
+          : product.price.toString().includes(filterValue)
       );
     }
 
-    return filteredUsers;
-  }, [products, filterValue]);
+    return filterProducts;
+  }, [products, filterValue, filterType]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -164,7 +171,7 @@ export default function App() {
               <span className="cursor-pointer text-lg text-warning active:opacity-50">
                 <Button
                   isIconOnly
-                  onPress={EditModal.onOpen}
+                  onPress={() => handleEditClick(product.id, EditModal.onOpen)}
                   variant={'light'}
                   color={'warning'}
                 >
@@ -229,19 +236,29 @@ export default function App() {
     setPage(1);
   }, []);
 
+  const onFilterTypeChange = React.useCallback((key: Selection) => {
+    const selectedKey = Array.from(key)[0];
+    setFilterType(selectedKey as string);
+  }, []);
+
+  useEffect(() => {
+    Aos.init({ duration: 1000 });
+  }, []);
+
   const topContent = React.useMemo(() => {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4" data-aos="fade-upjk">
         <div className="flex items-end justify-between gap-3">
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Search by name..."
+            placeholder={`Search by ${filterType}...`}
             startContent={<SearchIcon />}
             value={filterValue}
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
+
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
@@ -277,17 +294,21 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-small text-default-400">
-            Total {products.length} users
-          </span>
-          {/*<select*/}
-          {/*  className="bg-transparent text-small text-default-400 outline-none"*/}
-          {/*  onChange={onRowsPerPageChange}*/}
-          {/*>*/}
-          {/*  <option value="5">5</option>*/}
-          {/*  <option value="10">10</option>*/}
-          {/*  <option value="15">15</option>*/}
-          {/*</select>*/}
+          <Select
+            size={'sm'}
+            onSelectionChange={onFilterTypeChange}
+            label="Filter by"
+            placeholder="Select"
+            className="max-w-xs text-xs"
+            // selectedKeys={new Set([filterType])}
+          >
+            <SelectItem key="name" className={'text-xs'}>
+              Name
+            </SelectItem>
+            <SelectItem key="price" className={'text-xs'}>
+              Price
+            </SelectItem>
+          </Select>
           <Select
             size={'sm'}
             onChange={onRowsPerPageChange}
@@ -310,21 +331,25 @@ export default function App() {
     );
   }, [
     filterValue,
+    filterType,
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
+    onFilterTypeChange,
     products.length,
     hasSearchFilter,
   ]);
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="flex items-center justify-between px-2 py-2">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === 'all'
-            ? 'All items selected'
-            : `${selectedKeys.size} of ${filteredItems.length} selected`}
+      <div
+        className="flex items-center justify-between px-2 py-2"
+        data-aos="fade-up"
+      >
+        <span className=" w-[30%] text-small text-default-400">
+          Total {products.length} users
         </span>
+
         <Pagination
           radius={'full'}
           variant="light"
@@ -383,6 +408,7 @@ export default function App() {
         topContentPlacement="outside"
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
+        data-aos="fade-up"
       >
         <TableHeader columns={headerColumns}>
           {(column) => (
@@ -415,6 +441,12 @@ export default function App() {
         isOpen={CreateModal.isOpen}
         onOpenChange={CreateModal.onOpenChange}
         onClose={CreateModal.onClose}
+      />
+      <UpdateModalComponent
+        isOpen={EditModal.isOpen}
+        onClose={EditModal.onClose}
+        onOpenChange={EditModal.onOpenChange}
+        id={id}
       />
     </>
   );

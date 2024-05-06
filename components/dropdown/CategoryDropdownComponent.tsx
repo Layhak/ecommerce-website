@@ -11,7 +11,7 @@ type ImageType = {
 };
 type CategoryDropdownComponentProps = {
   selectedImage: ImageType | null;
-  setSelectedImage: React.Dispatch<React.SetStateAction<ImageType | null>>;
+  setSelectedImage: any;
 };
 
 const CategoryDropdownComponent: React.FC<CategoryDropdownComponentProps> = ({

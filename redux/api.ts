@@ -1,7 +1,5 @@
 // Or from '@reduxjs/toolkit/query' if not using the auto-generated hooks
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { RootState } from '@/redux/store';
-import { setAccessToken } from '@/redux/feature/auth/authSlice';
 import { getSession } from 'next-auth/react';
 
 // Setting up prepareHeaders to include the token in the headers
@@ -17,6 +15,7 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+// args: for the request details // api: for Redux api object // extraOptions: for additional
 const baseQueryWithReAuth = async (args: any, api: any, extraOptions: any) => {
   const result = await baseQuery(args, api, extraOptions);
   if (result?.error?.status === 401) {

@@ -14,6 +14,9 @@ export const productApi = ecommerceApi.injectEndpoints({
     getProductById: builder.query<any, number>({
       query: (id) => `products/${id}/`,
     }),
+    getLazyProductById: builder.query<any, number>({
+      query: (id) => `products/${id}/`,
+    }),
     getProductByProfile: builder.query<any, { page: number; pageSize: number }>(
       {
         query: ({ page = 1, pageSize = 10 }) =>
@@ -79,6 +82,7 @@ export const productApi = ecommerceApi.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductByIdQuery,
+  useLazyGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,

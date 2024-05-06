@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ImageType, ModalType, ProductType } from '@/libs/difinition';
+import React, { useEffect, useState } from 'react';
+import { ImageType, ModalTypeWithId, ProductType } from '@/libs/difinition';
 import {
   Button,
   Modal,
@@ -12,54 +12,91 @@ import {
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as Yup from 'yup';
-import { useCreateProductMutation } from '@/redux/service/product';
+import {
+  useLazyGetProductByIdQuery,
+  useUpdateProductMutation,
+} from '@/redux/service/product';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import ProductDropdownComponent from '@/components/dropdown/ProductDropdownComponent';
-import CategoryDropdownComponent from '@/components/dropdown/CategoryDropdownComponent';
 import { PlusIcon } from '@/components/icons';
-import CreateCategoryIconModalComponent from '@/components/modal/CreateCategoryIconModal';
 import CreateProductImageModalComponent from '@/components/modal/CreateProductImageModal';
 
-const initialValues: ProductType = {
-  category: {
-    name: '',
-    icon: '',
-  },
-  name: '',
-  price: 0,
-  quantity: 0,
-  desc: '',
-  image: '',
+type CategoryType = {
+  name: string;
+};
+type UpdateProductType = {
+  id: number;
+  category: CategoryType;
+  name: string;
+  price: number;
+  quantity: number;
+  desc: string;
+  image?: string;
+};
+type UpdateProductProps = {
+  product?: ProductType;
 };
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
-  price: Yup.number()
-    .required('Price is required')
-    .min(0, 'Price must be greater than 0'),
-  quantity: Yup.number()
-    .required('Quantity is required')
-    .min(0, 'Quantity must be greater than 0'),
+  price: Yup.number().required('Price is required'),
   desc: Yup.string().required('Description is required'),
   category: Yup.object().shape({
     name: Yup.string().required('Category name is required'),
   }),
 });
 
-export default function CreateModalComponent({
+export default function UpdateModalComponent({
+  id,
   isOpen,
   onOpenChange,
-}: ModalType) {
+}: ModalTypeWithId & UpdateProductProps) {
   const CreateCategoryIconModal = useDisclosure();
   const CreateProductImageModal = useDisclosure();
-  const [createProduct, { data, isLoading, error }] =
-    useCreateProductMutation();
-  const [categoryImage, setCategoryImage] = useState<ImageType | null>(null);
+  const [trigger, { data: product, error: fetchError }] =
+    useLazyGetProductByIdQuery();
+  console.log(product);
+  const [updateProduct, { isLoading, error: updateError }] =
+    useUpdateProductMutation();
+
   const [productImage, setProductImage] = useState<ImageType | null>(null);
-  const handleCreateProduct = async (values: ProductType) => {
+  const [categoryImage, setCategoryImage] = useState<ImageType | null>(null);
+  useEffect(() => {
+    if (isOpen) {
+      trigger(id);
+    }
+  }, [isOpen, id, trigger]);
+  useEffect(() => {
+    if (product) {
+      setProductImage({
+        id: product.id, // Set the correct id
+        name: product.name, // Set the correct name
+        image: product.image,
+      });
+      setCategoryImage({
+        id: product.category.id, // Set the correct id
+        name: product.category.name, // Set the correct name
+        image: product.category.icon,
+      });
+    }
+  }, [product]);
+
+  const initialValues: UpdateProductType = {
+    id: product?.id || 0,
+    category: {
+      name: product?.category || '',
+    },
+    name: product?.name || '',
+    price: Number(product?.price) || 0,
+    image: product?.image || '',
+    quantity: Number(product?.quantity) || 0,
+    desc: product?.desc || '',
+  };
+
+  const handleUpdateProduct = async (values: UpdateProductType) => {
     try {
-      // Use the form values to create a new product
-      const result = await createProduct({
-        newProduct: {
+      const result = await updateProduct({
+        id: values.id,
+        updatedProduct: {
           category: {
             name: values.category.name,
             icon: categoryImage?.image,
@@ -72,10 +109,9 @@ export default function CreateModalComponent({
         },
       });
 
-      // If the product creation was successful, show the toast notification
       // @ts-ignore
       if (result.data) {
-        toast.success('Product created successfully', {
+        toast.success('Product updated successfully', {
           position: 'top-right',
           autoClose: 2000,
           hideProgressBar: false,
@@ -86,21 +122,23 @@ export default function CreateModalComponent({
           theme: 'colored',
           transition: Bounce,
         });
-        //wait for 2 seconds and then reload
+        // Wait for 2 seconds and then redirect to the shop page
         setTimeout(() => {
-          window.location.reload();
+          window.location.href = '/my-shop';
         }, 2000);
       }
     } catch (error) {
-      console.error('Error during product creation:', error);
+      console.error('Failed to update product', error); // Log the error
     }
   };
+
   return (
     <>
       <Formik
-        onSubmit={handleCreateProduct}
+        onSubmit={handleUpdateProduct}
         initialValues={initialValues}
         validationSchema={validationSchema}
+        enableReinitialize // allows initialValues to update when product data changes
       >
         <Modal
           isOpen={isOpen}
@@ -113,7 +151,7 @@ export default function CreateModalComponent({
             {(onClose) => (
               <>
                 <ModalHeader className="flex flex-col gap-1">
-                  Create Product
+                  Update Product
                 </ModalHeader>
                 <ModalBody>
                   <Form method="POST" className="space-y-6">
@@ -187,6 +225,7 @@ export default function CreateModalComponent({
                           className="block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           name="desc"
                           id="desc"
+                          rows={4}
                         />
                         <ErrorMessage
                           name="desc"
@@ -228,20 +267,6 @@ export default function CreateModalComponent({
                         />
                       </div>
                     </div>
-                    <div className={'flex gap-5'}>
-                      <CategoryDropdownComponent
-                        selectedImage={categoryImage}
-                        setSelectedImage={setCategoryImage}
-                      />
-                      <Button
-                        color={'default'}
-                        variant={'shadow'}
-                        onPress={CreateCategoryIconModal.onOpen}
-                        isIconOnly
-                      >
-                        <PlusIcon />
-                      </Button>
-                    </div>
                     <div className={'grid grid-cols-2 gap-5'}>
                       <Button color="danger" variant="shadow" onPress={onClose}>
                         Close
@@ -251,12 +276,9 @@ export default function CreateModalComponent({
                         type={'submit'}
                         variant={'shadow'}
                         className={'text-foreground'}
-                        onPress={() => {
-                          // handleDelete().then((r) => console.log(r));
-                          onClose();
-                        }}
+                        onPress={onClose}
                       >
-                        Create
+                        Update
                       </Button>
                     </div>
                   </Form>
@@ -268,11 +290,6 @@ export default function CreateModalComponent({
         </Modal>
       </Formik>
       <ToastContainer />
-      <CreateCategoryIconModalComponent
-        isOpen={CreateCategoryIconModal.isOpen}
-        onOpenChange={CreateCategoryIconModal.onOpenChange}
-        onClose={CreateCategoryIconModal.onClose}
-      />
       <CreateProductImageModalComponent
         isOpen={CreateProductImageModal.isOpen}
         onClose={CreateProductImageModal.onClose}
