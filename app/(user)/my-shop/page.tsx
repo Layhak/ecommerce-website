@@ -1,25 +1,25 @@
 'use client';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
   Dropdown,
-  DropdownMenu,
   DropdownItem,
-  Chip,
-  User,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
   Pagination,
+  Select,
   Selection,
-  ChipProps,
+  SelectItem,
   SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
   Tooltip,
+  useDisclosure,
 } from '@nextui-org/react';
 import {
   ChevronDownIcon,
@@ -27,14 +27,22 @@ import {
   EditIcon,
   EyeIcon,
   PlusIcon,
+  SearchIcon,
 } from '@/components/icons';
-import { SearchIcon } from '@/components/icons';
-import { columns, categoryOption } from './data';
+import { columns } from './data';
 import { capitalize } from './utils';
-import { useGetMyProductsQuery } from '@/redux/service/product';
+import {
+  useDeleteProductMutation,
+  useGetMyProductsQuery,
+  useUpdateProductMutation,
+} from '@/redux/service/product';
 import { Image } from '@nextui-org/image';
+import { renderItem } from '@/components/rendering/pagination';
+import DeleteModalComponent from '@/components/modal/DeleteModal';
+import CreateModalComponent from '@/components/modal/CreateModal';
 
 const INITIAL_VISIBLE_COLUMNS = [
+  'id',
   'name',
   'price',
   'category',
@@ -43,31 +51,40 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 export default function App() {
+  const DeleteModal = useDisclosure();
+  const EditModal = useDisclosure();
+  const CreateModal = useDisclosure();
+  const [id, setId] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const handleEditClick = (id: number, modal: any) => {
+    setId(id);
+    setIsOpen(modal);
+  };
   // Use the getMyProducts query
   const {
     data: products = [],
     error,
     isLoading,
   } = useGetMyProductsQuery({ page: 1, pageSize: 20 });
+  const [deleteProduct] = useDeleteProductMutation();
+  const updateProduct = useUpdateProductMutation();
 
-  const [filterValue, setFilterValue] = React.useState('');
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
-    new Set([])
-  );
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
+  const [filterValue, setFilterValue] = useState('');
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
+  const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'price',
     direction: 'ascending',
   });
 
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
-  const headerColumns = React.useMemo(() => {
+  const headerColumns = useMemo(() => {
     if (visibleColumns === 'all') return columns;
 
     return columns.filter((column) =>
@@ -75,7 +92,7 @@ export default function App() {
     );
   }, [visibleColumns]);
 
-  const filteredItems = React.useMemo(() => {
+  const filteredItems = useMemo(() => {
     let filteredUsers = [...products];
 
     if (hasSearchFilter) {
@@ -89,14 +106,14 @@ export default function App() {
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
     return filteredItems.slice(start, end);
   }, [page, filteredItems, rowsPerPage]);
 
-  const sortedItems = React.useMemo(() => {
+  const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       const first = a[sortDescriptor.column as keyof (typeof products)[0]];
       const second = b[sortDescriptor.column as keyof (typeof products)[0]];
@@ -133,19 +150,41 @@ export default function App() {
       case 'actions':
         return (
           <div className="relative flex items-center gap-2">
-            <Tooltip content="Details">
-              <span className="cursor-pointer text-lg text-default-400 active:opacity-50">
+            <Tooltip color={'primary'} content="Details">
+              <Button
+                isIconOnly
+                href={`/product/${product.id}`}
+                variant={'light'}
+                color={'primary'}
+              >
                 <EyeIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip color={'warning'} content="Edit user">
+              <span className="cursor-pointer text-lg text-warning active:opacity-50">
+                <Button
+                  isIconOnly
+                  onPress={EditModal.onOpen}
+                  variant={'light'}
+                  color={'warning'}
+                >
+                  <EditIcon />
+                </Button>
               </span>
             </Tooltip>
-            <Tooltip content="Edit user">
-              <span className="cursor-pointer text-lg text-default-400 active:opacity-50">
-                <EditIcon />
-              </span>
-            </Tooltip>
+
             <Tooltip color="danger" content="Delete user">
               <span className="cursor-pointer text-lg text-danger active:opacity-50">
-                <DeleteIcon />
+                <Button
+                  isIconOnly
+                  onPress={() =>
+                    handleEditClick(product.id, DeleteModal.onOpen)
+                  }
+                  variant={'light'}
+                  color={'danger'}
+                >
+                  <DeleteIcon />
+                </Button>
               </span>
             </Tooltip>
           </div>
@@ -228,8 +267,12 @@ export default function App() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<PlusIcon />}>
-              Add New
+            <Button
+              color="success"
+              onPress={CreateModal.onOpen}
+              endContent={<PlusIcon />}
+            >
+              Add New Product
             </Button>
           </div>
         </div>
@@ -237,17 +280,31 @@ export default function App() {
           <span className="text-small text-default-400">
             Total {products.length} users
           </span>
-          <label className="flex items-center text-small text-default-400">
-            Rows per page:
-            <select
-              className="bg-transparent text-small text-default-400 outline-none"
-              onChange={onRowsPerPageChange}
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-            </select>
-          </label>
+          {/*<select*/}
+          {/*  className="bg-transparent text-small text-default-400 outline-none"*/}
+          {/*  onChange={onRowsPerPageChange}*/}
+          {/*>*/}
+          {/*  <option value="5">5</option>*/}
+          {/*  <option value="10">10</option>*/}
+          {/*  <option value="15">15</option>*/}
+          {/*</select>*/}
+          <Select
+            size={'sm'}
+            onChange={onRowsPerPageChange}
+            label="Row per page"
+            placeholder="The total is 5 by defaults"
+            className="max-w-xs"
+          >
+            <SelectItem key={5} value={5}>
+              5
+            </SelectItem>
+            <SelectItem key={10} value={10}>
+              10
+            </SelectItem>
+            <SelectItem key={15} value={15}>
+              15
+            </SelectItem>
+          </Select>
         </div>
       </div>
     );
@@ -269,10 +326,14 @@ export default function App() {
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
         </span>
         <Pagination
-          isCompact
-          showControls
+          radius={'full'}
+          variant="light"
+          disableCursorAnimation
           showShadow
-          color="primary"
+          loop
+          showControls
+          className={'gap-2'}
+          renderItem={renderItem}
           page={page}
           total={pages}
           onChange={setPage}
@@ -308,40 +369,53 @@ export default function App() {
   }
 
   return (
-    <Table
-      aria-label="Example table with custom cells, pagination and sorting"
-      isHeaderSticky
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'max-h-[382px] min-h-[382px]',
-      }}
-      sortDescriptor={sortDescriptor}
-      topContent={topContent}
-      topContentPlacement="outside"
-      onSelectionChange={setSelectedKeys}
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={headerColumns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
-            allowsSorting={column.sortable}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent={'No products found'} items={sortedItems}>
-        {(item) => (
-          <TableRow key={item.id}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey)}</TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <Table
+        aria-label="Example table with custom cells, pagination and sorting"
+        isHeaderSticky
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: 'max-h-[382px] min-h-[382px]',
+        }}
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+              allowsSorting={column.sortable}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={'No products found'} items={sortedItems}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <DeleteModalComponent
+        isOpen={DeleteModal.isOpen}
+        id={id}
+        onOpenChange={DeleteModal.onOpenChange}
+        onClose={DeleteModal.onClose}
+      />
+      <CreateModalComponent
+        isOpen={CreateModal.isOpen}
+        onOpenChange={CreateModal.onOpenChange}
+        onClose={CreateModal.onClose}
+      />
+    </>
   );
 }

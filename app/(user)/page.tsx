@@ -9,13 +9,8 @@ import 'aos/dist/aos.css';
 import { useGetProductsQuery } from '@/redux/service/product';
 import { CartProductType } from '@/libs/difinition';
 import CardComponents from '@/components/card/productCard';
-import {
-  cn,
-  Pagination,
-  PaginationItemRenderProps,
-  PaginationItemType,
-} from '@nextui-org/react';
-import { ChevronIcon } from '@/components/icons';
+import { Pagination } from '@nextui-org/react';
+import { renderItem } from '@/components/rendering/pagination';
 
 export default function Page() {
   const [page, setPage] = React.useState(1);
@@ -29,67 +24,7 @@ export default function Page() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
-  const renderItem = ({
-    ref,
-    key,
-    value,
-    isActive,
-    onNext,
-    onPrevious,
-    setPage,
-    className,
-  }: PaginationItemRenderProps) => {
-    if (value === PaginationItemType.NEXT) {
-      return (
-        <Button
-          key={key}
-          className={cn(className, 'h-8 w-8 min-w-8 bg-default-200/50')}
-          onClick={onNext}
-          isIconOnly
-        >
-          <ChevronIcon className="rotate-180" />
-        </Button>
-      );
-    }
 
-    if (value === PaginationItemType.PREV) {
-      return (
-        <Button
-          variant={'shadow'}
-          key={key}
-          className={cn(className, 'h-8 w-8 min-w-8 bg-default-200/50')}
-          onClick={onPrevious}
-          isIconOnly
-        >
-          <ChevronIcon />
-        </Button>
-      );
-    }
-
-    if (value === PaginationItemType.DOTS) {
-      return (
-        <button key={key} className={className}>
-          ...
-        </button>
-      );
-    }
-
-    // cursor is the default item
-    return (
-      <button
-        ref={ref}
-        key={key}
-        className={cn(
-          className,
-          isActive &&
-            'bg-gradient-to-tr  from-orange-700 to-warning font-bold text-white'
-        )}
-        onClick={() => setPage(value)}
-      >
-        {value}
-      </button>
-    );
-  };
   useEffect(() => {
     Aos.init({ duration: 1000 });
   }, []);
@@ -276,6 +211,7 @@ export default function Page() {
             onChange={handlePageChange}
             loop
             showControls
+            showShadow
             className="gap-2"
             radius="full"
             renderItem={renderItem}

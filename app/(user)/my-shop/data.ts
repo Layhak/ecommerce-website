@@ -1,9 +1,9 @@
 const columns = [
   { name: 'ID', uid: 'id', sortable: true },
-  { name: 'NAME', uid: 'name', sortable: true },
-  { name: 'PRICE', uid: 'price', sortable: true },
-  { name: 'CATEGORY', uid: 'category', sortable: true },
   { name: 'IMAGE', uid: 'image' },
+  { name: 'NAME', uid: 'name', sortable: true },
+  { name: 'CATEGORY', uid: 'category', sortable: true },
+  { name: 'PRICE', uid: 'price', sortable: true },
   { name: 'ACTIONS', uid: 'actions' },
 ];
 

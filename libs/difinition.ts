@@ -27,30 +27,23 @@ export type FormDataUpdate = {
   seller: string;
   fileProduct: any;
 };
-export type FormDelete = {
-  readonly id: string;
-  category: {
-    name: any;
-  };
+
+export type ImageType = {
+  id: number;
   name: string;
-  desc: string;
-  image?: string;
-  price: string;
-  quantity: string;
-  seller: string;
+  image: string;
 };
+
 export type ProductType = {
   category: {
     name: string;
     icon: string;
   };
-  readonly id: string;
   name: string;
+  price: number;
+  quantity: number;
   desc: string;
-  image?: string;
-  price: string;
-  quantity: string;
-  seller: string;
+  image: string;
 };
 export type CartProductType = {
   name: string;
@@ -60,6 +53,17 @@ export type CartProductType = {
   category: string;
   id: number;
   onClick?: () => void;
+};
+export type ModalType = {
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenChange: () => void;
+};
+export type ModalTypeWithId = {
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenChange: () => void;
+  id: number;
 };
 
 export const BASE_URL = 'https://store.istad.co';
