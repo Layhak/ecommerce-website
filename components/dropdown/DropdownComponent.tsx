@@ -18,7 +18,7 @@ type PropsType = {
   setPage: (page: number) => void;
   page: number;
   selectedImage: ImageType | null;
-  setSelectedImage: (image: ImageType | null) => void;
+  setSelectedImage: any;
 };
 
 type ImageType = {
